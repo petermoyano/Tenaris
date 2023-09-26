@@ -5,9 +5,12 @@ name = "pypi"
 
 [packages]
 langchain = "*"
-pypdf2 = "*"
 python-dotenv = "*"
 streamlit = "*"
+pypdf2 = "*"
+qdrant-client = "*"
+openai = "*"
+tiktoken = "*"
 
 [dev-packages]
 

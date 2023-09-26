@@ -1,0 +1,147 @@
+Abstract
+Text embeddings are commonly evaluated on
+a small set of datasets from a single task not
+covering their possible applications to other
+tasks. It is unclear whether state-of-the-art embeddings on semantic textual similarity (STS)
+can be equally well applied to other tasks like
+clustering or reranking. This makes progress
+in the field difficult to track, as various models
+are constantly being proposed without proper
+evaluation. To solve this problem, we introduce the Massive Text Embedding Benchmark
+(MTEB). MTEB spans 8 embedding tasks covering a total of 58 datasets and 112 languages.
+Through the benchmarking of 33 models on
+MTEB, we establish the most comprehensive
+benchmark of text embeddings to date. We
+find that no particular text embedding method
+dominates across all tasks. This suggests that
+the field has yet to converge on a universal text
+embedding method and scale it up sufficiently
+to provide state-of-the-art results on all embedding tasks. MTEB comes with open-source
+code and a public leaderboard at https:
+//github.com/embeddings-benchm
+ark/mteb.
+1 Introduction
+Natural language embeddings power a variety of
+use cases from clustering and topic representation (Aggarwal and Zhai, 2012; Angelov, 2020)
+to search systems and text mining (Huang et al.,
+2020; Zhu et al., 2021; Nayak, 2019) to feature
+representations for downstream models (Saharia
+et al., 2022; Borgeaud et al., 2022). Using generative language models or cross-encoders for these
+applications is often intractable, as they may require exponentially more computations (Reimers
+and Gurevych, 2019).
+However, the evaluation regime of current text
+embedding models rarely covers the breadth of
+*Most of the work done while at Hugging Face. Correspondence to n.muennighoff@gmail.com.
+their possible use cases. For example, SimCSE (Gao et al., 2021b) or SBERT (Reimers and
+Gurevych, 2019) solely evaluate on STS and classification tasks, leaving open questions about the
+transferability of the embedding models to search
+or clustering tasks. STS is known to poorly correlate with other real-world use cases (Neelakantan
+et al., 2022; Wang et al., 2021). Further, evaluating
+embedding methods on many tasks requires implementing multiple evaluation pipelines. Implementation details like pre-processing or hyperparameters may influence the results making it unclear
+whether performance improvements simply come
+from a favorable evaluation pipeline. This leads to
+the “blind” application of these models to new use
+cases in industry or requires incremental work to
+reevaluate them on different tasks.
+The Massive Text Embedding Benchmark
+(MTEB) aims to provide clarity on how models
+perform on a variety of embedding tasks and thus
+serves as the gateway to finding universal text embeddings applicable to a variety of tasks. MTEB
+consists of 58 datasets covering 112 languages
+from 8 embedding tasks: Bitext mining, classification, clustering, pair classification, reranking,
+retrieval, STS and summarization. MTEB software
+is available open-source1
+enabling evaluation of
+any embedding model by adding less than 10 lines
+of code. Datasets and the MTEB leaderboard are
+available on the Hugging Face Hub2
+.
+We evaluate over 30 models on MTEB with additional speed and memory benchmarking to provide
+a holistic view of the state of text embedding models. We cover both models available open-source
+as well as models accessible via APIs, such as the
+OpenAI Embeddings endpoint. We find there to be
+no single best solution, with different models dom1https://github.com/embeddings-benchm
+ark/mteb
+2https://huggingface.co/spaces/mteb/l
+eaderboard
+arXiv:2210.07316v3 [cs.CL] 19 Mar 2023
+inating different tasks. Our benchmarking sheds
+light on the weaknesses and strengths of individual
+models, such as SimCSE’s (Gao et al., 2021b) low
+performance on clustering and retrieval despite its
+strong performance on STS. We hope our work
+makes selecting the right embedding model easier
+and simplifies future embedding research.
+2 Related Work
+2.1 Benchmarks
+Benchmarks, such as (Super)GLUE (Wang et al.,
+2018, 2019) or Big-BENCH (Srivastava et al.,
+2022), and evaluation frameworks (Gao et al.,
+2021a) play a key role in driving NLP progress.
+Yearly released SemEval datasets (Agirre et al.,
+2012, 2013, 2014, 2015, 2016) are commonly used
+as the go-to benchmark for text embeddings. SemEval datasets correspond to the task of semantic
+textual similarity (STS) requiring models to embed
+similar sentences with geometrically close embeddings. Due to the limited expressivity of a single SemEval dataset, SentEval (Conneau and Kiela, 2018)
+aggregates multiple STS datasets. SentEval focuses
+on fine-tuning classifiers on top of embeddings. It
+lacks tasks like retrieval or clustering, where embeddings are directly compared without additional
+classifiers. Further, the toolkit was proposed in
+2018 and thus does not provide easy support for
+recent trends like text embeddings from transformers (Reimers and Gurevych, 2019). Due to the
+insufficiency of STS benchmarking, USEB (Wang
+et al., 2021) was introduced consisting mostly of
+reranking tasks. Consequently, it does not cover
+tasks like retrieval or classification. Meanwhile, the
+recently released BEIR Benchmark (Thakur et al.,
+2021) has become the standard for the evaluation
+of embeddings for zero-shot information retrieval.
+MTEB unifies datasets from different embedding tasks into a common, accessible evaluation
+framework. MTEB incorporates SemEval datasets
+(STS11 - STS22) and BEIR alongside a variety of
+other datasets from various tasks to provide a holistic performance review of text embedding models.
+2.2 Embedding Models
+Text embedding models like Glove (Pennington
+et al., 2014) lack context awareness and are thus
+commonly labeled as Word Embedding Models.
+They consist of a layer mapping each input word
+to a vector often followed by an averaging layer to
+provide a final embedding invariant of input length.
+Transformers (Vaswani et al., 2017) inject context
+awareness into language models via self-attention
+and form the foundation of most recent embedding models. BERT (Devlin et al., 2018) uses the
+transformer architecture and performs large-scale
+self-supervised pre-training. The resulting model
+can directly be used to produce text embeddings
+via an averaging operation alike Glove. Building on InferSent (Conneau et al., 2017), SBERT
+(Reimers and Gurevych, 2019) demonstrated it to
+be beneficial to perform additional fine-tuning of
+the transformer for competitive embedding performance. Most recent fine-tuned embedding models
+use a contrastive loss objective to perform supervised fine-tuning on positive and negative text pairs
+(Gao et al., 2021b; Wang et al., 2021; Ni et al.,
+2021b; Muennighoff, 2022). Due to the large variety of available pre-trained transformers (Wolf
+et al., 2020), there is an at least equally large variety of potential text embedding models to be explored. This leads to confusion about which model
+provides practitioners with the best performance
+for their embedding use case.
+We benchmark both word embedding and transformer models on MTEB quantifying gains provided by often much slower context aware models.
+3 The MTEB Benchmark
+3.1 Desiderata
+MTEB is built on a set of desiderata: (a) Diversity:
+MTEB aims to provide an understanding of the
+usability of embedding models in various use cases.
+The benchmark comprises 8 different tasks, with
+up to 15 datasets each. Of the 58 total datasets in
+MTEB, 10 are multilingual, covering 112 different languages. Sentence-level and paragraph-level
+datasets are included to contrast performance on
+short and long texts. (b) Simplicity: MTEB provides a simple API for plugging in any model that
+given a list of texts can produce a vector for each
+list item with a consistent shape. This makes it
+possible to benchmark a diverse set of models. (c)
+Extensibility: New datasets for existing tasks can
+be benchmarked in MTEB via a single file that
+specifies the task and a Hugging Face dataset name
+where the data has been uploaded (Lhoest et al.,
+2021). New tasks require implementing a task interface for loading the data and an evaluator for
+benchmarking. We welcome dataset, task or metric
+contributions from the community via pull requests
+to continue the development of MTEB. (d) Repro-
